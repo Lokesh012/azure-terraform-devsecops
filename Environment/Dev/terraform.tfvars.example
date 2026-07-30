@@ -1,0 +1,348 @@
+rgs = {
+  rg1 = {
+    name     = "cineverers-rg"
+    location = "Central India"
+  }
+}
+
+
+vnets = {
+  vanet1 = {
+    name                = "cineverse-vnet"
+    location            = "Central India"
+    resource_group_name = "cineverers-rg"
+    address_space       = ["10.250.0.0/16"]
+  }
+}
+
+#Subnets
+
+snets = {
+  snet1 = {
+    name                 = "frontend-snet"
+    resource_group_name  = "cineverers-rg"
+    virtual_network_name = "cineverse-vnet"
+    address_prefixes     = ["10.250.1.0/24"]
+  }
+  snet2 = {
+    name                 = "backend-snet"
+    resource_group_name  = "cineverers-rg"
+    virtual_network_name = "cineverse-vnet"
+    address_prefixes     = ["10.250.2.0/24"]
+  }
+
+  snet3 = {
+    name                 = "AzureBastionSubnet"
+    resource_group_name  = "cineverers-rg"
+    virtual_network_name = "cineverse-vnet"
+    address_prefixes     = ["10.250.3.0/24"]
+  }
+
+  snet4 = {
+    name                 = "APIGw-snet"
+    resource_group_name  = "cineverers-rg"
+    virtual_network_name = "cineverse-vnet"
+    address_prefixes     = ["10.250.4.0/24"]
+  }
+}
+
+#Public_Ip's
+pips = {
+  pip1 = {
+    name                = "nat-pip"
+    location            = "Central India"
+    resource_group_name = "cineverers-rg"
+    allocation_method   = "Static"
+    sku                 = "Standard"
+  }
+
+  pip2 = {
+    name                = "bastion-pip"
+    location            = "Central India"
+    resource_group_name = "cineverers-rg"
+    allocation_method   = "Static"
+    sku                 = "Standard"
+  }
+
+  pip3 = {
+    name                = "appgw-pip"
+    location            = "Central India"
+    resource_group_name = "cineverers-rg"
+    allocation_method   = "Static"
+    sku                 = "Standard"
+
+  }
+
+}
+
+#NAT Garteway
+
+nats = {
+  nat1 = {
+    name                   = "vm-nat"
+    location               = "Central India"
+    resource_group_name    = "cineverers-rg"
+    virtual_network_name   = "cineverse-vnet"
+    sku_name               = "Standard"
+    data_frontend_sub_name = "frontend-snet"
+    data_backend_sub_name  = "backend-snet"
+    data_pip_name          = "nat-pip"
+  }
+  #  nat2 ={
+  #     name = "backend-nat"
+  #     location = "Central India"
+  #     resource_group_name = "cineverers-rg"
+  #     virtual_network_name = "cineverse-vnet"
+  #     sku_name = "Standard"
+  #     sub_name = "backend-snet"
+  #     data_name = "backend-pip"
+  # }
+}
+
+#Bastion
+
+bastion = {
+  bastion1 = {
+    name                 = "hostadmin"
+    location             = "Central India"
+    resource_group_name  = "cineverers-rg"
+    virtual_network_name = "cineverse-vnet"
+    pip_name             = "bastion-pip"
+    data_sub_name        = "AzureBastionSubnet"
+    sku                  = "Standard"
+  }
+}
+
+#Network_security_groups
+nsgs = {
+
+  frontend = {
+
+    name                 = "frontend-NSG"
+    location             = "Central India"
+    resource_group_name  = "cineverers-rg"
+    virtual_network_name = "cineverse-vnet"
+    subnet_name          = "frontend-snet"
+
+    security_rules = [
+
+      {
+        name                       = "Allow-HTTP"
+        priority                   = 100
+        direction                  = "Inbound"
+        access                     = "Allow"
+        protocol                   = "Tcp"
+        source_port_range          = "*"
+        destination_port_range     = "80"
+        source_address_prefix      = "*"
+        destination_address_prefix = "*"
+      },
+
+      {
+        name                       = "Allow-HTTPS"
+        priority                   = 110
+        direction                  = "Inbound"
+        access                     = "Allow"
+        protocol                   = "Tcp"
+        source_port_range          = "*"
+        destination_port_range     = "443"
+        source_address_prefix      = "*"
+        destination_address_prefix = "*"
+      },
+
+      {
+        name                       = "Allow-SSH"
+        priority                   = 120
+        direction                  = "Inbound"
+        access                     = "Allow"
+        protocol                   = "Tcp"
+        source_port_range          = "*"
+        destination_port_range     = "22"
+        source_address_prefix      = "10.250.3.0/24"
+        destination_address_prefix = "*"
+      }
+
+    ]
+  }
+
+  backend = {
+
+    name                 = "backend-NSG"
+    location             = "Central India"
+    resource_group_name  = "cineverers-rg"
+    virtual_network_name = "cineverse-vnet"
+    subnet_name          = "backend-snet"
+
+    security_rules = [
+
+      {
+        name                       = "Allow-API"
+        priority                   = 100
+        direction                  = "Inbound"
+        access                     = "Allow"
+        protocol                   = "Tcp"
+        source_port_range          = "*"
+        destination_port_range     = "5000"
+        source_address_prefix      = "10.250.3.0/24"
+        destination_address_prefix = "*"
+      },
+
+      {
+        name                       = "Allow-SSH"
+        priority                   = 110
+        direction                  = "Inbound"
+        access                     = "Allow"
+        protocol                   = "Tcp"
+        source_port_range          = "*"
+        destination_port_range     = "22"
+        source_address_prefix      = "10.250.3.0/24"
+        destination_address_prefix = "*"
+      }
+
+    ]
+  }
+}
+
+
+#Virtual Machine:
+
+vms = {
+
+  frontend = {
+
+    name = "cineverse-fe-vm"
+
+    computer_name = "frontend"
+
+    location = "Central India"
+
+    resource_group_name = "cineverers-rg"
+
+    subnet_name = "frontend-snet"
+
+    virtual_network_name = "cineverse-vnet"
+
+    vm_size = "Standard_D2s_v3"
+
+    admin_username = "azureuser"
+
+    private_ip_address_allocation = "Static"
+
+    private_ip_address = "10.250.1.4"
+
+    publisher = "Canonical"
+
+    offer = "0001-com-ubuntu-server-jammy"
+
+    sku = "22_04-lts-gen2"
+
+    version = "latest"
+
+    os_disk_name = "frontend-osdisk"
+
+    storage_account_type = "StandardSSD_LRS"
+
+    caching = "ReadWrite"
+
+    admin_username = "Change_Me"
+
+    admin_password = "Change_Me"
+
+    disable_password_authentication = false
+
+    custom_data = "../../scripts/frontend.sh"
+
+  }
+
+  backend = {
+
+    name = "cineverse-be-vm"
+
+    computer_name = "backend"
+
+    location = "Central India"
+
+    resource_group_name = "cineverers-rg"
+
+    subnet_name = "backend-snet"
+
+    virtual_network_name = "cineverse-vnet"
+
+    vm_size = "Standard_D2s_v3"
+
+    admin_username = "azureuser"
+
+    private_ip_address_allocation = "Static"
+
+    private_ip_address = "10.250.2.4"
+
+    publisher = "Canonical"
+
+    offer = "0001-com-ubuntu-server-jammy"
+
+    sku = "22_04-lts-gen2"
+
+    version = "latest"
+
+    os_disk_name = "backend-osdisk"
+
+    storage_account_type = "StandardSSD_LRS"
+
+    caching = "ReadWrite"
+
+    admin_username = "Change_Me"
+
+    admin_password = "Change_Me"
+
+    disable_password_authentication = false
+
+    custom_data = "../../scripts/backend.sh"
+
+  }
+
+}
+
+sql_servers = {
+  sql1 = {
+
+    server_name         = "cineverse-sql-server"
+    location            = "Central India"
+    resource_group_name = "cineverers-rg"
+    #   virtual_network_name = "cineverse-vnet"
+    version                      = "12.0"
+    administrator_login          = "Change_Me"
+    administrator_login_password = "Change_Me"
+    database_name                = "cineverse-sql-db"
+    collation                    = ""
+    max_size_gb                  = 2
+    zone_redundant               = false
+    sqlfwrule_name               = "AllowAzureServices"
+  }
+}
+
+APGws = {
+  appgw01 = {
+    appgw_name           = "cv-appgw"
+    location             = "Central India"
+    resource_group_name  = "cineverers-rg"
+    subnet_name          = "APIGw-snet"
+    virtual_network_name = "cineverse-vnet"
+    public_ip_name       = "appgw-pip"
+    sku_name             = "Standard_v2"
+    sku_tier             = "Standard_v2"
+    capacity             = 2
+    frontend_port        = 80
+    frontend_private_ip  = "10.250.1.4"
+    backend_private_ip   = "10.250.2.4"
+  }
+}
+
+key_vault = {
+  kv1 = {
+    name = "cv-dev-kv01"
+    location = "Central India"
+    resource_group_name = "cineverers-rg"
+    sql_admin_username  = "Change_Me"
+    sql_admin_password  = "Change_Me"
+  }
+}

@@ -1,0 +1,1 @@
+variable "sql_servers" {}
