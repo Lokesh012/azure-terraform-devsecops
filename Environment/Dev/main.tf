@@ -53,7 +53,7 @@ module "sql_module" {
 
   sql_admin_username = data.azurerm_key_vault_secret.sql_username.value
   sql_admin_password = data.azurerm_key_vault_secret.sql_password.value
-  depends_on = [module.rg_module]
+  depends_on         = [module.rg_module]
 }
 
 module "apgw_module" {

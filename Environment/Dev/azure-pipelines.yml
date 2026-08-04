@@ -1,0 +1,39 @@
+
+trigger:
+ branches:
+  include:
+     -main
+
+pool1:
+  vmImage: ubuntu-latest
+
+variables:
+ - group: Terraform-Dev
+
+stages:
+ -stage: Verify
+  displayName: "Verify Build Agent"
+  
+  jobs:
+   -job: VerifyAgent
+    displayName: "Agent Information"
+
+  steps:
+   - checkout: self
+   - script: |
+        echo "========== Agent Information =========="
+        echo "Agent Name: $(Agent.Name)"
+        echo "Agent OS: $(Agent.OS)"
+        echo "Agent Machine Name: $(Agent.MachineName)"
+        echo "Working Directory:"
+        pwd
+        
+        echo ""
+        echo "========== Repository =========="
+        ls -la
+
+        echo ""
+        echo "========== Repository Structure =========="
+        find . -maxdepth 3
+
+      displayName: "Display Agent & Repository Details"
