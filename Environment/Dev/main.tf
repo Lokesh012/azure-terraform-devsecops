@@ -34,7 +34,7 @@ module "nat-module" {
 }
 
 module "bastion_module" {
-  source     = "../../module/Azure-Bastion"
+  source     = "../../azure-bastion"
   bastion    = var.bastion
   depends_on = [module.rg_module, module.pip_module, module.subnet_module]
 }
@@ -47,19 +47,24 @@ module "vm_module" {
 }
 
 module "sql_module" {
-  source      = "../../module/SQL-Database"
+  source = "../../module/SQL-Database"
+
   sql_servers = var.sql_servers
-  depends_on  = [module.rg_module]
+
+  sql_admin_username = data.azurerm_key_vault_secret.sql_username.value
+  sql_admin_password = data.azurerm_key_vault_secret.sql_password.value
+  depends_on = [module.rg_module]
 }
 
 module "apgw_module" {
-  source     = "../../module/Application-Gateway"
+  source     = "../../module/application-gateway"
   APGws      = var.APGws
   depends_on = [module.rg_module, var.vnets, module.pip_module, module.subnet_module, module.vm_module]
 }
 
 
-module "keyvault" {
-  source = "../../module/KeyVault"
-   key_vault = var.key_vault  
-}
+# module "keyvault" {
+#   source = "../../module/KeyVault"
+#    key_vault = var.key_vault
+#    depends_on = [ module.rg_module ]
+# }
