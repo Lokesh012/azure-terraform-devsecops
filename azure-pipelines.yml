@@ -81,10 +81,19 @@ stages:
             terraform version
           displayName: "Install Terraform"
 
-        # Install GitLeaks
+
+       # Install GitLeaks
 
         - script: |
-            curl -sSfL https://raw.githubusercontent.com/gitleaks/gitleaks/master/install.sh | sh -s -- -b /usr/local/bin
+           GITLEAKS_VERSION=8.30.1
 
-            gitleaks version
+           wget https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz
+
+           tar -xzf gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz
+
+           sudo mv gitleaks /usr/local/bin/
+
+           chmod +x /usr/local/bin/gitleaks
+
+           gitleaks version
           displayName: "Install GitLeaks"
