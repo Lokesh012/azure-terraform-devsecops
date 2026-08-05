@@ -55,7 +55,6 @@ stages:
       displayName: "Install Security Tools"
 
       steps:
-
         - checkout: self
           fetchDepth: 0
 
@@ -67,20 +66,25 @@ stages:
             echo "Location          : $(LOCATION)"
           displayName: "Verify Variable Group"
 
-        # Install Terraform
-
-        - task: TerraformInstaller@1
-          displayName: "Install Terraform"
-          inputs:
-            terraformVersion: $(TF_VERSION)
+        # Install Terraform (Manual Installation)
 
         - script: |
+            sudo apt-get update
+            sudo apt-get install -y unzip wget
+
+            wget https://releases.hashicorp.com/terraform/$(TF_VERSION)/terraform_$(TF_VERSION)_linux_amd64.zip
+
+            unzip terraform_$(TF_VERSION)_linux_amd64.zip
+
+            sudo mv terraform /usr/local/bin/
+
             terraform version
-          displayName: "Verify Terraform Installation"
+          displayName: "Install Terraform"
 
         # Install GitLeaks
 
         - script: |
             curl -sSfL https://raw.githubusercontent.com/gitleaks/gitleaks/master/install.sh | sh -s -- -b /usr/local/bin
+
             gitleaks version
           displayName: "Install GitLeaks"
