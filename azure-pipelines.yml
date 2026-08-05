@@ -36,3 +36,43 @@ stages:
               echo "========== Repository Structure =========="
               find . -maxdepth 3
             displayName: "Display Agent & Repository Details"
+
+
+  - stage: SecurityScan
+    displayName: "Security Scan"
+    dependsOn: Verify
+
+    jobs:
+     - job: SecurityCheck
+       displayName: "Run Security Tools"
+
+       steps:
+        
+        - checkout: self
+          fetchDepth: 0
+
+        #Install Terraform
+
+        - task: TerraformInstaller@1
+          displayName: "Install Terraform"
+          inputs:
+            terraformVersion: $(TF_VERSION)
+
+        #Install GitLeaks
+        - script: |
+            curl -sSfL https://raw.githubusercontent.com/gitleaks/gitleaks/master/install.sh | sh -s -- -b /usr/local/bin
+            gitleaks version
+          displayName: Install GitLeaks      
+                    
+        # Install TFLint
+        - script: |
+            curl -s https://raw.githubusercontent.com/terraform-linters/tflint/master/install_linux.sh | bash
+            tflint --version
+          displayName: Install TFLint
+
+        # Install Checkov
+        - script: |
+            python3 -m pip install --upgrade pip
+            pip3 install checkov
+            checkov --version
+          displayName: Install Checkov 
