@@ -10,69 +10,77 @@ variables:
   - group: Terraform-Dev
 
 stages:
-  - stage: Verify
-    displayName: "Verify Build Agent"
 
-    jobs:
-      - job: VerifyAgent
-        displayName: "Agent Information"
+# =====================================================
+# Stage 0 - Verify Build Agent
+# =====================================================
 
-        steps:
-          - checkout: self
+- stage: Verify
+  displayName: "Verify Build Agent"
 
-          - script: |
-              echo "========== Agent Information =========="
-              echo "Agent Name: $(Agent.Name)"
-              echo "Agent OS: $(Agent.OS)"
-              echo "Agent Machine Name: $(Agent.MachineName)"
-              echo "Working Directory:"
-              pwd
+  jobs:
+    - job: VerifyAgent
+      displayName: "Agent Information"
 
-              echo ""
-              echo "========== Repository =========="
-              ls -la
+      steps:
+        - checkout: self
 
-              echo ""
-              echo "========== Repository Structure =========="
-              find . -maxdepth 3
-            displayName: "Display Agent & Repository Details"
+        - script: |
+            echo "========== Agent Information =========="
+            echo "Agent Name: $(Agent.Name)"
+            echo "Agent OS: $(Agent.OS)"
+            echo "Agent Machine Name: $(Agent.MachineName)"
+            echo "Working Directory:"
+            pwd
 
+            echo ""
+            echo "========== Repository =========="
+            ls -la
 
-  - stage: SecurityScan
-    displayName: "Security Scan"
-    dependsOn: Verify
+            echo ""
+            echo "========== Repository Structure =========="
+            find . -maxdepth 3
+          displayName: "Display Agent & Repository Details"
 
-    jobs:
-     - job: SecurityCheck
-       displayName: "Run Security Tools"
+# =====================================================
+# Stage 1 - Security Setup
+# =====================================================
 
-       steps:
-        
+- stage: SecurityScan
+  displayName: "Security Scan"
+  dependsOn: Verify
+
+  jobs:
+    - job: SecurityCheck
+      displayName: "Install Security Tools"
+
+      steps:
+
         - checkout: self
           fetchDepth: 0
 
-        #Install Terraform
+        # Verify Variable Group
+
+        - script: |
+            echo "Terraform Version : $(TF_VERSION)"
+            echo "Environment       : $(ENVIRONMENT)"
+            echo "Location          : $(LOCATION)"
+          displayName: "Verify Variable Group"
+
+        # Install Terraform
 
         - task: TerraformInstaller@1
           displayName: "Install Terraform"
           inputs:
             terraformVersion: $(TF_VERSION)
 
-        #Install GitLeaks
+        - script: |
+            terraform version
+          displayName: "Verify Terraform Installation"
+
+        # Install GitLeaks
+
         - script: |
             curl -sSfL https://raw.githubusercontent.com/gitleaks/gitleaks/master/install.sh | sh -s -- -b /usr/local/bin
             gitleaks version
-          displayName: Install GitLeaks      
-                    
-        # Install TFLint
-        - script: |
-            curl -s https://raw.githubusercontent.com/terraform-linters/tflint/master/install_linux.sh | bash
-            tflint --version
-          displayName: Install TFLint
-
-        # Install Checkov
-        - script: |
-            python3 -m pip install --upgrade pip
-            pip3 install checkov
-            checkov --version
-          displayName: Install Checkov 
+          displayName: "Install GitLeaks"
