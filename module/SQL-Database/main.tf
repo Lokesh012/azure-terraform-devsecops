@@ -5,8 +5,8 @@ resource "azurerm_mssql_server" "sql_server" {
   resource_group_name          = each.value.resource_group_name
   location                     = each.value.location
   version                      = each.value.version
-  administrator_login          = each.value.administrator_login
-  administrator_login_password = each.value.administrator_login_password
+  administrator_login          = var.sql_admin_username
+  administrator_login_password = var.sql_admin_password
   minimum_tls_version          = "1.2"
   public_network_access_enabled = true
 }
