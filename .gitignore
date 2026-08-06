@@ -27,3 +27,10 @@ terraform.tfvars
 
 # Logs
 *.log
+
+# GitLeaks test files
+github.txt
+test-secret.txt
+private.pem
+report.json
+checkov-report.json
