@@ -14,18 +14,24 @@ stages:
         - checkout: self
           fetchDepth: 0
 
+        # ============================================
         # Verify Variable Group
+        # ============================================
 
         - script: |
             echo "Terraform Version : $(TF_VERSION)"
             echo "Environment       : $(ENVIRONMENT)"
             echo "Location          : $(LOCATION)"
-
           displayName: "Verify Variable Group"
 
+        # ============================================
         # Install Terraform
+        # ============================================
 
         - script: |
+            mkdir -p /tmp/terraform
+            cd /tmp/terraform
+
             sudo apt-get update
             sudo apt-get install -y unzip wget
 
@@ -36,30 +42,17 @@ stages:
             sudo mv terraform /usr/local/bin/
 
             terraform version
-
           displayName: "Install Terraform"
 
-        # GitLeaks
+        # ============================================
+        # Install & Run GitLeaks
+        # ============================================
 
         - script: |
-            pwd
 
-            echo "=========================="
+            mkdir -p /tmp/gitleaks
+            cd /tmp/gitleaks
 
-            ls -la
-
-            echo "=========================="
-
-            find . -name "README.md"
-
-            echo "=========================="
-
-            find . -maxdepth 3
-
-          displayName: "Debug Repository"
-
-
-        - script: |
             GITLEAKS_VERSION=8.30.1
 
             wget https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz
@@ -70,54 +63,33 @@ stages:
 
             chmod +x /usr/local/bin/gitleaks
 
+            echo ""
             echo "==============================="
             echo "GitLeaks Version"
             echo "==============================="
-
             gitleaks version
 
             echo ""
-
             echo "==============================="
             echo "Running GitLeaks Scan"
             echo "==============================="
 
-            echo "Current directory"
-            pwd
+            cd $(Build.SourcesDirectory)
 
-            echo ""
-            echo "Build Sources Directory"
-            echo $(Build.SourcesDirectory)
-
-            echo ""
-            echo "Current files"
-            find . -maxdepth 2
-
-            echo ""
-            echo "Searching every README"
-            find /home/vsts/work -name README.md
-
-            echo ""
-            echo "GitLeaks location"
-            which gitleaks
-
-            echo ""
-            echo "GitLeaks binary folder"
-            ls -la $(dirname $(which gitleaks))
-
-            echo ""
-            echo "Running scan"
             gitleaks dir . --verbose
+
           displayName: "Run GitLeaks"
 
-        # TFLint
+        # ============================================
+        # Install & Run TFLint
+        # ============================================
 
         - script: |
-            TFLINT_VERSION=0.59.1
 
-            mkdir /tmp/tflint
-
+            mkdir -p /tmp/tflint
             cd /tmp/tflint
+
+            TFLINT_VERSION=0.59.1
 
             wget https://github.com/terraform-linters/tflint/releases/download/v${TFLINT_VERSION}/tflint_linux_amd64.zip
 
@@ -127,7 +99,16 @@ stages:
 
             chmod +x /usr/local/bin/tflint
 
+            echo ""
+            echo "==============================="
+            echo "TFLint Version"
+            echo "==============================="
             tflint --version
+
+            echo ""
+            echo "==============================="
+            echo "Initializing TFLint"
+            echo "==============================="
 
             cd $(Build.SourcesDirectory)/Environment/Dev
 
@@ -135,19 +116,42 @@ stages:
 
             tflint --init
 
+            echo ""
+            echo "==============================="
+            echo "Running TFLint"
+            echo "==============================="
+
             tflint --format compact || true
 
           displayName: "Run TFLint"
           continueOnError: true
 
-        # Checkov
+        # ============================================
+        # Install & Run Checkov
+        # ============================================
 
         - script: |
+
+            echo ""
+            echo "==============================="
+            echo "Installing Checkov"
+            echo "==============================="
+
             python3 -m pip install --upgrade pip
 
             pip3 install checkov==3.2.461
 
+            echo ""
+            echo "==============================="
+            echo "Checkov Version"
+            echo "==============================="
+
             checkov --version
+
+            echo ""
+            echo "==============================="
+            echo "Running Checkov"
+            echo "==============================="
 
             cd $(Build.SourcesDirectory)
 
@@ -157,6 +161,7 @@ stages:
 
             EXIT_CODE=$?
 
+            echo ""
             echo "Checkov Exit Code: $EXIT_CODE"
 
             exit 0
