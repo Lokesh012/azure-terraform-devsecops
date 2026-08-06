@@ -1,0 +1,37 @@
+stages:
+- stage: ManualApproval
+  displayName: "Manual Approval"
+
+  dependsOn: TerraformPlan
+  condition: succeeded()
+
+  jobs:
+
+  - job: WaitForApproval
+    displayName: "Approve Infrastructure Deployment"
+
+    pool: server
+
+    timeoutInMinutes: 1440
+
+    steps:
+
+    - task: ManualValidation@0
+
+      timeoutInMinutes: 1440
+
+      inputs:
+
+        notifyUsers: ''
+
+        instructions: |
+          Please review the Terraform Plan.
+
+          Verify:
+          - Resources to be created
+          - No unexpected changes
+          - Security checks passed
+
+          Approve to continue deployment.
+
+        onTimeout: reject
