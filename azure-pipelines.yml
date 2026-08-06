@@ -71,40 +71,24 @@ stages:
         - script: |
             sudo apt-get update
             sudo apt-get install -y unzip wget
-
             wget https://releases.hashicorp.com/terraform/$(TF_VERSION)/terraform_$(TF_VERSION)_linux_amd64.zip
-
             unzip terraform_$(TF_VERSION)_linux_amd64.zip
-
             sudo mv terraform /usr/local/bin/
-
             terraform version
           displayName: "Install Terraform"
 
 
-
-
-       # Install & Run GitLeaks
+        # Install & Run GitLeaks
 
         - script: |
            GITLEAKS_VERSION=8.30.1
+           mkdir /tmp/gitleaks
+           cd /tmp/gitleaks
            wget https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz
            tar -xzf gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz
-
            sudo mv gitleaks /usr/local/bin/
-
            chmod +x /usr/local/bin/gitleaks
-
-           echo "==============================="
-           echo "GitLeaks Version"
-           echo "==============================="
+           cd $(Build.SourcesDirectory)
            gitleaks version
-
-           echo ""
-           echo "==============================="
-           echo "Running GitLeaks Scan"
-           echo "==============================="
-
            gitleaks dir . --verbose
-
           displayName: "Run GitLeaks Scan"
