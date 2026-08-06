@@ -120,13 +120,13 @@ stages:
           
         - script: |
 
-           python3 -m install --upgrade pip
+           python3 -m pip install --upgrade pip
 
-           pip3 install checkov=3.2.461
+           pip3 install checkov==3.2.461
 
            checkov --version
 
-           cd &(Build.SourcesDirectory)
+           cd $(Build.SourcesDirectory)
 
            checkov \
               -d . \
