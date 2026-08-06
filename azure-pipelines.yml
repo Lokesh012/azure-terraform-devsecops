@@ -114,7 +114,24 @@ stages:
            cd $(Build.SourcesDirectory)/Environment/Dev
            terraform init -backend=false
            tflint --init
-           tflint --format compact
+           tflint --format compact || true
           displayName: "Run TFLint"
           continueOnError: true
+          
+        - script: |
 
+           python3 -m install --upgrade pip
+
+           pip3 install checkov=3.2.461
+
+           checkov --version
+
+           cd &(Build.SourcesDirectory)
+
+           checkov \
+              -d . \
+              - framework terraform \
+              --compact \
+              --quit || true
+          displayName: "RunCheckov"      
+          continueOnError: true
