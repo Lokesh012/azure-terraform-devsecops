@@ -128,6 +128,10 @@ stages:
 
            cd $(Build.SourcesDirectory)
 
-           checkov -d . --output cli --compact || true
+           checkov \
+             -d . \
+             --output cli \
+             --output junitxml \
+             --output-file-path console,checkov-report.xml
           displayName: "RunCheckov"      
           continueOnError: true
