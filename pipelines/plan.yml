@@ -19,23 +19,25 @@ stages:
 
     - checkout: self
 
+    # Install Terraform
     - script: |
-       sudo apt-get update
-       sudo apt-get install -y unzip wget
+        sudo apt-get update
+        sudo apt-get install -y unzip wget
 
-       wget https://releases.hashicorp.com/terraform/$(TF_VERSION)/terraform_$(TF_VERSION)_linux_amd64.zip
+        wget https://releases.hashicorp.com/terraform/$(TF_VERSION)/terraform_$(TF_VERSION)_linux_amd64.zip
 
-       unzip terraform_$(TF_VERSION)_linux_amd64.zip
+        unzip terraform_$(TF_VERSION)_linux_amd64.zip
 
-       sudo mv terraform /usr/local/bin/
+        sudo mv terraform /usr/local/bin/
 
-       terraform version
+        terraform version
+      displayName: "Install Terraform"
 
-  displayName: "Install Terraform"
+    # Terraform Init & Plan
+    - task: AzureCLI@2
+      displayName: "Terraform Init & Plan"
 
-- task: AzureCLI@2
-  displayName: "Terraform Init & Plan"
-  inputs:
+      inputs:
         azureSubscription: "OTTApp-Azure-SC"
         scriptType: bash
         scriptLocation: inlineScript
@@ -58,9 +60,10 @@ stages:
 
           terraform plan -out=tfplan
 
-- task: PublishPipelineArtifact@1
-  displayName: "Publish Terraform Plan"
+    # Publish Plan Artifact
+    - task: PublishPipelineArtifact@1
+      displayName: "Publish Terraform Plan"
 
-  inputs:
+      inputs:
         targetPath: "$(Build.SourcesDirectory)/Environment/Dev/tfplan"
         artifact: "tfplan"
