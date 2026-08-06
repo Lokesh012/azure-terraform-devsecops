@@ -54,11 +54,34 @@ stages:
 
           echo ""
 
+
+          pwd
+
+          ls -la
+          echo "==============================="
+          echo "Terraform Variables File"
+          echo "==============================="
+          ls -l terraform.tfvars
+
+          echo "==============================="
+          echo "Terraform Variables"
+          echo "==============================="
+
+          grep "^APGWs" terraform.tfvars || true
+
+          echo ""
+
+          terraform validate
+
+
           echo "==============================="
           echo "Terraform Plan"
           echo "==============================="
 
-          terraform plan -out=tfplan
+          terraform plan \
+          -input=false \
+          -var-file="terraform.tfvars" \
+          -out=tfplan
 
     # Publish Plan Artifact
     - task: PublishPipelineArtifact@1
