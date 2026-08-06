@@ -1,0 +1,122 @@
+stages:
+
+- stage: SecurityScan
+  displayName: "DevSecOps Security Gate"
+  dependsOn: Verify
+
+  jobs:
+
+    - job: SecurityCheck
+      displayName: "Install Security Tools"
+
+      steps:
+
+        - checkout: self
+          fetchDepth: 0
+
+        # Verify Variable Group
+
+        - script: |
+            echo "Terraform Version : $(TF_VERSION)"
+            echo "Environment       : $(ENVIRONMENT)"
+            echo "Location          : $(LOCATION)"
+
+          displayName: "Verify Variable Group"
+
+        # Install Terraform
+
+        - script: |
+            sudo apt-get update
+            sudo apt-get install -y unzip wget
+
+            wget https://releases.hashicorp.com/terraform/$(TF_VERSION)/terraform_$(TF_VERSION)_linux_amd64.zip
+
+            unzip -o terraform_$(TF_VERSION)_linux_amd64.zip
+
+            sudo mv terraform /usr/local/bin/
+
+            terraform version
+
+          displayName: "Install Terraform"
+
+        # GitLeaks
+
+        - script: |
+            GITLEAKS_VERSION=8.30.1
+
+            wget https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz
+
+            tar -xzf gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz
+
+            sudo mv gitleaks /usr/local/bin/
+
+            chmod +x /usr/local/bin/gitleaks
+
+            echo "==============================="
+            echo "GitLeaks Version"
+            echo "==============================="
+
+            gitleaks version
+
+            echo ""
+
+            echo "==============================="
+            echo "Running GitLeaks Scan"
+            echo "==============================="
+
+            gitleaks dir . --verbose
+
+          displayName: "Run GitLeaks"
+
+        # TFLint
+
+        - script: |
+            TFLINT_VERSION=0.59.1
+
+            mkdir /tmp/tflint
+
+            cd /tmp/tflint
+
+            wget https://github.com/terraform-linters/tflint/releases/download/v${TFLINT_VERSION}/tflint_linux_amd64.zip
+
+            unzip tflint_linux_amd64.zip
+
+            sudo mv tflint /usr/local/bin/
+
+            chmod +x /usr/local/bin/tflint
+
+            tflint --version
+
+            cd $(Build.SourcesDirectory)/Environment/Dev
+
+            terraform init -backend=false
+
+            tflint --init
+
+            tflint --format compact || true
+
+          displayName: "Run TFLint"
+          continueOnError: true
+
+        # Checkov
+
+        - script: |
+            python3 -m pip install --upgrade pip
+
+            pip3 install checkov==3.2.461
+
+            checkov --version
+
+            cd $(Build.SourcesDirectory)
+
+            set +e
+
+            checkov -d . --output cli --compact
+
+            EXIT_CODE=$?
+
+            echo "Checkov Exit Code: $EXIT_CODE"
+
+            exit 0
+
+          displayName: "Run Checkov"

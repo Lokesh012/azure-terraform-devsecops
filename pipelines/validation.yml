@@ -1,0 +1,76 @@
+stages:
+
+- stage: TerraformValidation
+  displayName: "Terraform Validation"
+  dependsOn: SecurityScan
+
+  jobs:
+
+    - job: ValidateTerraform
+      displayName: "Terraform Validation"
+
+      steps:
+
+        - checkout: self
+
+        # Install Terraform
+
+        - script: |
+            sudo apt-get update
+
+            sudo apt-get install -y unzip wget
+
+            wget https://releases.hashicorp.com/terraform/$(TF_VERSION)/terraform_$(TF_VERSION)_linux_amd64.zip
+
+            unzip -o terraform_$(TF_VERSION)_linux_amd64.zip
+
+            sudo mv terraform /usr/local/bin/
+
+            terraform version
+
+          displayName: "Install Terraform"
+
+        # Terraform fmt
+
+        - script: |
+            echo "==============================="
+
+            echo "Terraform Format Check"
+
+            echo "==============================="
+
+            cd $(Build.SourcesDirectory)/Environment/Dev
+
+            terraform fmt -check -recursive
+
+          displayName: "Terraform fmt"
+
+        # Terraform Init
+
+        - script: |
+            echo "==============================="
+
+            echo "Terraform Init"
+
+            echo "==============================="
+
+            cd $(Build.SourcesDirectory)/Environment/Dev
+
+            terraform init -backend=false
+
+          displayName: "Terraform Init"
+
+        # Terraform Validate
+
+        - script: |
+            echo "==============================="
+
+            echo "Terraform Validate"
+
+            echo "==============================="
+
+            cd $(Build.SourcesDirectory)/Environment/Dev
+
+            terraform validate
+
+          displayName: "Terraform Validate"
