@@ -17,7 +17,8 @@ stages:
 
 - template: pipelines/validation.yml
 
-# Coming Next
-# - template: pipelines/plan.yml
+- template: pipelines/plan.yml
+
 # - template: pipelines/approval.yml
+
 # - template: pipelines/apply.yml

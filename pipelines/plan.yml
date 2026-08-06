@@ -1,0 +1,53 @@
+stages:
+- stage: TerraformPlan
+  displayName: "Terraform Plan"
+
+  dependsOn: TerraformValidation
+  condition: succeeded()
+
+  jobs:
+  - job: TerraformPlan
+    displayName: "Terraform Plan"
+
+    pool:
+      vmImage: ubuntu-latest
+
+    variables:
+    - group: Terraform-Dev
+
+    steps:
+
+    - checkout: self
+
+    - task: AzureCLI@2
+      displayName: "Terraform Init & Plan"
+
+      inputs:
+        azureSubscription: "OTTApp-Azure-SC"
+        scriptType: bash
+        scriptLocation: inlineScript
+
+        inlineScript: |
+
+          echo "==============================="
+          echo "Terraform Init"
+          echo "==============================="
+
+          cd $(Build.SourcesDirectory)/Environment/Dev
+
+          terraform init
+
+          echo ""
+
+          echo "==============================="
+          echo "Terraform Plan"
+          echo "==============================="
+
+          terraform plan -out=tfplan
+
+    - task: PublishPipelineArtifact@1
+      displayName: "Publish Terraform Plan"
+
+      inputs:
+        targetPath: "$(Build.SourcesDirectory)/Environment/Dev/tfplan"
+        artifact: "tfplan"
