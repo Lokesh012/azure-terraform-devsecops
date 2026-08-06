@@ -105,6 +105,6 @@ stages:
            echo "Running GitLeaks Scan"
            echo "==============================="
 
-           gitleaks git . --verbose
+           gitleaks dir . --verbose
 
           displayName: "Run GitLeaks Scan"
