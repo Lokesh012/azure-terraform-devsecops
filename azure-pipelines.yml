@@ -128,10 +128,6 @@ stages:
 
            cd $(Build.SourcesDirectory)
 
-           checkov \
-              -d . \
-              - framework terraform \
-              --compact \
-              --quit || true
+           checkov -d . --output cli --compact || true
           displayName: "RunCheckov"      
           continueOnError: true
