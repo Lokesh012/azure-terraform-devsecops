@@ -82,8 +82,32 @@ stages:
             echo "Running GitLeaks Scan"
             echo "==============================="
 
-            gitleaks dir . --verbose
+            echo "Current directory"
+            pwd
 
+            echo ""
+            echo "Build Sources Directory"
+            echo $(Build.SourcesDirectory)
+
+            echo ""
+            echo "Current files"
+            find . -maxdepth 2
+
+            echo ""
+            echo "Searching every README"
+            find /home/vsts/work -name README.md
+
+            echo ""
+            echo "GitLeaks location"
+            which gitleaks
+
+            echo ""
+            echo "GitLeaks binary folder"
+            ls -la $(dirname $(which gitleaks))
+
+            echo ""
+            echo "Running scan"
+            gitleaks dir . --verbose
           displayName: "Run GitLeaks"
 
         # TFLint
