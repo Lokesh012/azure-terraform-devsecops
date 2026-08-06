@@ -10,10 +10,10 @@ override.tf.json
 *_override.tf.json
 
 # Variable files
-*.auto.tfvars
+terraform.auto.tfvars
 
 # Ignore sensitive tfvars
-terraform.tfvars
+# terraform.tfvars
 
 # Terraform lock file
 .terraform.lock.hcl
