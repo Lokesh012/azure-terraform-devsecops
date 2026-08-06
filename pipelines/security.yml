@@ -42,6 +42,24 @@ stages:
         # GitLeaks
 
         - script: |
+            pwd
+
+            echo "=========================="
+
+            ls -la
+
+            echo "=========================="
+
+            find . -name "README.md"
+
+            echo "=========================="
+
+            find . -maxdepth 3
+
+          displayName: "Debug Repository"
+
+
+        - script: |
             GITLEAKS_VERSION=8.30.1
 
             wget https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz
