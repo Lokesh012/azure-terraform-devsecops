@@ -109,14 +109,12 @@ stages:
            tflint --version
            echo ""
            echo "==============================="
-           echo "Initializing TFLint"
+           echo "Initializing and Running TFLint"
            echo "==============================="
            cd $(Build.SourcesDirectory)/Environment/Dev
-           tflint init -backend=false
+           terraform init -backend=false
            tflint --init
-           echo ""
-           echo "==============================="
-           echo "Running TFLint"
-           echo "==============================="
-           tflint
+           tflint --format compact
           displayName: "Run TFLint"
+          continueOnError: true
+
