@@ -1,0 +1,73 @@
+stages:
+- stage: TerraformApply
+  displayName: "Terraform Apply"
+
+  dependsOn: ManualApproval
+  condition: succeeded()
+
+  jobs:
+
+  - job: TerraformApply
+    displayName: "Terraform Apply"
+
+    pool:
+      vmImage: ubuntu-latest
+
+    variables:
+    - group: Terraform-Dev
+
+    steps:
+
+    - checkout: self
+
+    # Install Terraform
+    - script: |
+        sudo apt-get update
+        sudo apt-get install -y unzip wget
+
+        wget https://releases.hashicorp.com/terraform/$(TF_VERSION)/terraform_$(TF_VERSION)_linux_amd64.zip
+
+        unzip terraform_$(TF_VERSION)_linux_amd64.zip
+
+        sudo mv terraform /usr/local/bin/
+
+        terraform version
+      displayName: "Install Terraform"
+
+    # Download Secure Variables
+    - task: DownloadSecureFile@1
+      name: tfvars
+      displayName: "Download Terraform Variables"
+
+      inputs:
+        secureFile: "terraform.auto.tfvars"
+
+    # Move tfvars to working directory
+    - script: |
+        cp $(tfvars.secureFilePath) $(Build.SourcesDirectory)/Environment/Dev/terraform.auto.tfvars
+      displayName: "Copy Terraform Variables"
+
+    # Download tfplan artifact from Plan stage
+    - task: DownloadPipelineArtifact@2
+      displayName: "Download Terraform Plan"
+
+      inputs:
+        artifact: tfplan
+        path: $(Build.SourcesDirectory)/Environment/Dev
+
+    # Terraform Apply
+    - task: AzureCLI@2
+      displayName: "Terraform Apply"
+
+      inputs:
+        azureSubscription: "OTTApp-Azure-SC"
+        scriptType: bash
+        scriptLocation: inlineScript
+
+        inlineScript: |
+
+          cd $(Build.SourcesDirectory)/Environment/Dev
+
+          terraform init
+
+          terraform apply -auto-approve tfplan

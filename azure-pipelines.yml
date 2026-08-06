@@ -19,6 +19,6 @@ stages:
 
 - template: pipelines/plan.yml
 
-# - template: pipelines/approval.yml
+- template: pipelines/approval.yml
 
 # - template: pipelines/apply.yml
