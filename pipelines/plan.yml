@@ -17,23 +17,60 @@ stages:
 
     steps:
 
+    # ============================================
+    # Checkout Repository
+    # ============================================
+
     - checkout: self
 
+    # ============================================
+    # Download Secure terraform.auto.tfvars
+    # ============================================
+
+    - task: DownloadSecureFile@1
+      name: tfvars
+      displayName: "Download terraform.auto.tfvars"
+
+      inputs:
+        secureFile: "terraform.auto.tfvars"
+
+    # ============================================
+    # Copy Secure File
+    # ============================================
+
+    - script: |
+        cp $(tfvars.secureFilePath) $(Build.SourcesDirectory)/Environment/Dev/terraform.auto.tfvars
+
+        echo "==============================="
+        echo "Terraform Files"
+        echo "==============================="
+
+        ls -la $(Build.SourcesDirectory)/Environment/Dev
+
+      displayName: "Copy terraform.auto.tfvars"
+
+    # ============================================
     # Install Terraform
+    # ============================================
+
     - script: |
         sudo apt-get update
         sudo apt-get install -y unzip wget
 
         wget https://releases.hashicorp.com/terraform/$(TF_VERSION)/terraform_$(TF_VERSION)_linux_amd64.zip
 
-        unzip terraform_$(TF_VERSION)_linux_amd64.zip
+        unzip -o terraform_$(TF_VERSION)_linux_amd64.zip
 
         sudo mv terraform /usr/local/bin/
 
         terraform version
+
       displayName: "Install Terraform"
 
+    # ============================================
     # Terraform Init & Plan
+    # ============================================
+
     - task: AzureCLI@2
       displayName: "Terraform Init & Plan"
 
@@ -54,36 +91,32 @@ stages:
 
           echo ""
 
+          echo "==============================="
+          echo "Current Directory"
+          echo "==============================="
 
           pwd
 
-          ls -la
-          echo "==============================="
-          echo "Terraform Variables File"
-          echo "==============================="
-          ls -l terraform.tfvars
-
-          echo "==============================="
-          echo "Terraform Variables"
-          echo "==============================="
-
-          grep "^APGWs" terraform.tfvars || true
-
           echo ""
 
-          terraform validate
+          echo "==============================="
+          echo "Files"
+          echo "==============================="
 
+          ls -la
+
+          echo ""
 
           echo "==============================="
           echo "Terraform Plan"
           echo "==============================="
 
-          terraform plan \
-          -input=false \
-          -var-file="terraform.tfvars" \
-          -out=tfplan
+          terraform plan -input=false -out=tfplan
 
-    # Publish Plan Artifact
+    # ============================================
+    # Publish Terraform Plan
+    # ============================================
+
     - task: PublishPipelineArtifact@1
       displayName: "Publish Terraform Plan"
 
