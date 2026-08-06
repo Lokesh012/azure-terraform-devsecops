@@ -47,7 +47,7 @@ stages:
 # =====================================================
 
 - stage: SecurityScan
-  displayName: "Security Scan"
+  displayName: "DevSecOps Security Gate"
   dependsOn: Verify
 
   jobs:
@@ -92,3 +92,30 @@ stages:
            gitleaks version
            gitleaks dir . --verbose
           displayName: "Run GitLeaks Scan"
+
+        # Install & Run TFLint
+
+        - script: |
+           TFLINT_VERSION=0.59.1
+           mkdir /tmp/tflint
+           cd /tmp/tflint
+           wget https://github.com/terraform-linters/tflint/releases/download/v${TFLINT_VERSION}/tflint_linux_amd64.zip
+           unzip tflint_linux_amd64.zip
+           sudo mv tflint /usr/local/bin/
+           chmod +x /usr/local/bin/tflint
+           echo "==============================="
+           echo "TFLint Version"
+           echo "==============================="
+           tflint --version
+           echo ""
+           echo "==============================="
+           echo "Initializing TFLint"
+           echo "==============================="
+           cd $(Build.SourcesDirectory)
+           tflint --init
+           echo ""
+           echo "==============================="
+           echo "Running TFLint"
+           echo "==============================="
+           tflint --recursive
+          displayName: "Run TFLint"
