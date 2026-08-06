@@ -111,11 +111,12 @@ stages:
            echo "==============================="
            echo "Initializing TFLint"
            echo "==============================="
-           cd $(Build.SourcesDirectory)
+           cd $(Build.SourcesDirectory)/Environment/Dev
+           tflint init -backend=false
            tflint --init
            echo ""
            echo "==============================="
            echo "Running TFLint"
            echo "==============================="
-           tflint --recursive
+           tflint
           displayName: "Run TFLint"
