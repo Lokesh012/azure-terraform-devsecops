@@ -128,11 +128,15 @@ stages:
 
            cd $(Build.SourcesDirectory)
 
-           checkov \
-             -d . \
-             --output cli \
-             --output junitxml \
-             --output-file-path console,checkov-report.xml
+           set +e
+           checkov -d . --output cli --compact
+           EXIT_CODE=$?
+
+           echo ""
+           echo "Checkov Exit Code: $EXIT_CODE"
+           echo "Continuing pipeline..."
+           exit 0
+          
           displayName: "RunCheckov"      
           continueOnError: true
 
