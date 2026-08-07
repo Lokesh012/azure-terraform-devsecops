@@ -67,12 +67,13 @@ stages:
 
       displayName: "Install Terraform"
 
-        # ============================================
+    # ============================================
     # Install Infracost
     # ============================================
 
     - script: |
-        INFRACOST_VERSION=2.12.2
+
+        INFRACOST_VERSION=0.10.45
 
         wget https://github.com/infracost/infracost/releases/download/v${INFRACOST_VERSION}/infracost-linux-amd64.tar.gz
 
@@ -88,7 +89,7 @@ stages:
 
         infracost --version
 
-      displayName: "Install Infracost"  
+      displayName: "Install Infracost"
 
     # ============================================
     # Terraform Init & Plan
