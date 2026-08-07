@@ -33,7 +33,7 @@ stages:
 
         terraform version
       displayName: "Install Terraform"
-
+  
     # Download Secure Variables
     - task: DownloadSecureFile@1
       name: tfvars

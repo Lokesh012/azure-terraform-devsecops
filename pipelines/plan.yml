@@ -67,6 +67,29 @@ stages:
 
       displayName: "Install Terraform"
 
+        # ============================================
+    # Install Infracost
+    # ============================================
+
+    - script: |
+        INFRACOST_VERSION=2.12.2
+
+        wget https://github.com/infracost/infracost/releases/download/v${INFRACOST_VERSION}/infracost-linux-amd64.tar.gz
+
+        tar -xzf infracost-linux-amd64.tar.gz
+
+        sudo mv infracost-linux-amd64 /usr/local/bin/infracost
+
+        chmod +x /usr/local/bin/infracost
+
+        echo "==============================="
+        echo "Infracost Version"
+        echo "==============================="
+
+        infracost --version
+
+      displayName: "Install Infracost"  
+
     # ============================================
     # Terraform Init & Plan
     # ============================================
@@ -112,6 +135,28 @@ stages:
           echo "==============================="
 
           terraform plan -input=false -out=tfplan
+
+    
+    # ============================================
+    # Run Infracost
+    # ============================================
+
+    - script: |
+
+        echo "==============================="
+        echo "Running Infracost"
+        echo "==============================="
+
+        export INFRACOST_API_KEY=$(INFRACOST_API_KEY)
+
+        cd $(Build.SourcesDirectory)/Environment/Dev
+
+        infracost breakdown \
+          --path=tfplan \
+          --format=table
+
+      displayName: "Run Infracost"
+
 
     # ============================================
     # Publish Terraform Plan
